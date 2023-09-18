@@ -13,6 +13,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.YearMonth;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "monthly-limits")
@@ -30,4 +31,5 @@ public class MonthlyLimit {
     private String category;
     private BigDecimal amountLimit;
     private YearMonth month;
+    private ZonedDateTime timestamp;
 }

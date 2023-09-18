@@ -21,13 +21,9 @@ public class MonthlyLimitController {
 
     @PostMapping
     public ResponseEntity<String> setMonthlyLimit(@RequestParam String category,
-            @RequestParam("amount_limit") BigDecimal amountLimit,
-            @RequestParam int year,
-            @RequestParam int month
-    ) {
+            @RequestParam("amount_limit") BigDecimal amountLimit) {
         try {
-            YearMonth yearMonth = YearMonth.of(year, month);
-            monthlyLimitService.setMonthlyLimit(category, amountLimit, yearMonth);
+            monthlyLimitService.setMonthlyLimit(category, amountLimit);
             return ResponseEntity.ok("Monthly limit set successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Some errors occurred during the saving process");

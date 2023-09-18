@@ -1,41 +1,34 @@
 package kz.shakhuali.springproject.testassignment.model;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
-@Table(name = "transactions")
-@Getter
+@Table(name = "exchange_rates")
 @Setter
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Transaction {
+@Builder
+public class ExchangeRate {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String currency;
-    private BigDecimal amount;
-    private LocalDateTime dateTime;
-
-    @Column(name = "limit_exceeded")
-    private boolean limitExceeded;
-
-    @ManyToOne
-    @JoinColumn(name = "monthly_limit_id")
-    private MonthlyLimit monthlyLimit;
+    private String baseCurrency;
+    private String targetCurrency;
+    private Double rate;
+    private LocalDate date;
 }

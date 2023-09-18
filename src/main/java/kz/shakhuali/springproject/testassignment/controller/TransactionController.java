@@ -1,5 +1,6 @@
 package kz.shakhuali.springproject.testassignment.controller;
 
+import kz.shakhuali.springproject.testassignment.dto.ExceededLimitTransactionDto;
 import kz.shakhuali.springproject.testassignment.dto.TransactionDto;
 import kz.shakhuali.springproject.testassignment.service.TransactionService;
 import lombok.RequiredArgsConstructor;
@@ -26,5 +27,10 @@ public class TransactionController {
     @PostMapping
     public TransactionDto createTransaction(@RequestBody TransactionDto transactionDto) {
         return transactionService.saveTransaction(transactionDto);
+    }
+
+    @GetMapping("/exceeded-limit")
+    public List<ExceededLimitTransactionDto> getExceededLimitTransactions() {
+        return transactionService.getExceededLimitTransactions();
     }
 }
