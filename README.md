@@ -36,7 +36,7 @@
 2. После успешной сборки запустите микросервис:
 
    ```bash
-   java -jar build/libs/microservice-expense-management.jar
+   java -jar build/libs/test-assignment-0.0.1-SNAPSHOT.jar
 
 Микросервис будет доступен по адресу http://localhost:8080.
 
