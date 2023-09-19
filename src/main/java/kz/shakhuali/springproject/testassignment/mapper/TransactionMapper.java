@@ -1,7 +1,6 @@
 package kz.shakhuali.springproject.testassignment.mapper;
 
 import kz.shakhuali.springproject.testassignment.dto.TransactionDto;
-import kz.shakhuali.springproject.testassignment.model.MonthlyLimit;
 import kz.shakhuali.springproject.testassignment.model.Transaction;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

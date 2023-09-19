@@ -6,11 +6,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: test-backend
-    environment:
-      - SERVER_PORT=8080
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/postgres
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=0805
+    env_file:
+      - .env
     ports:
       - "8080:8080"
     command: [
@@ -26,9 +23,8 @@ services:
   postgres:
     container_name: postgres
     image: postgres
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=0805
+    env_file:
+      - .env
     volumes:
       - postgres:/data/postgres
     ports:
@@ -37,10 +33,8 @@ services:
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    env_file:
+      - .env
     volumes:
       - pgadmin:/var/lib/pgadmin
     ports:

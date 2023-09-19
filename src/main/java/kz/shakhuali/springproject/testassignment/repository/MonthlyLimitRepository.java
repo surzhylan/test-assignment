@@ -4,10 +4,10 @@ import kz.shakhuali.springproject.testassignment.model.MonthlyLimit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.YearMonth;
+import java.time.ZonedDateTime;
 
 @Repository
 public interface MonthlyLimitRepository extends JpaRepository<MonthlyLimit, Long> {
 
-    MonthlyLimit findByCategoryAndMonth(String category, YearMonth month);
+    MonthlyLimit findByCategoryAndTimestamp(String category, ZonedDateTime time);
 }

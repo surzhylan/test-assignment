@@ -8,8 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.YearMonth;
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,18 +21,17 @@ public class MonthlyLimitServiceImpl implements MonthlyLimitService {
 
     @Override
     public void setMonthlyLimit(String category, BigDecimal amountLimit) {
-        YearMonth month = YearMonth.now();
-        MonthlyLimit limitExists = monthlyLimitRepository.findByCategoryAndMonth(category, month);
+        ZonedDateTime timestamp = ZonedDateTime.now();
+        MonthlyLimit limitExists = monthlyLimitRepository.findByCategoryAndTimestamp(category, timestamp);
 
-        if(limitExists != null) {
+        if (limitExists != null) {
             log.error("Updating existing limits is not allowed");
             throw new IllegalArgumentException("Updating existing limits is not allowed");
         } else {
             MonthlyLimit monthlyLimit = MonthlyLimit.builder()
                     .category(category)
                     .amountLimit(amountLimit != null ? amountLimit : BigDecimal.valueOf(1000))
-                    .month(month)
-                    .timestamp(ZonedDateTime.now())
+                    .timestamp(timestamp)
                     .build();
 
             monthlyLimitRepository.save(monthlyLimit);
@@ -39,13 +39,20 @@ public class MonthlyLimitServiceImpl implements MonthlyLimitService {
     }
 
     @Override
-    public BigDecimal getCurrentLimit(String category, YearMonth month) {
-        MonthlyLimit currentLimit = monthlyLimitRepository.findByCategoryAndMonth(category, month);
+    public BigDecimal getCurrentLimit(String category, ZonedDateTime timestamp) {
+        MonthlyLimit currentLimit = monthlyLimitRepository.findByCategoryAndTimestamp(category, timestamp);
         return currentLimit.getAmountLimit();
     }
 
+
     @Override
     public MonthlyLimit findById(Long id) {
-        return monthlyLimitRepository.findById(id).orElse(null);
+        Optional<MonthlyLimit> monthlyLimitOptional = monthlyLimitRepository.findById(id);
+        return monthlyLimitOptional.orElse(null);
+    }
+
+    @Override
+    public List<MonthlyLimit> getAllLimits() {
+        return monthlyLimitRepository.findAll();
     }
 }

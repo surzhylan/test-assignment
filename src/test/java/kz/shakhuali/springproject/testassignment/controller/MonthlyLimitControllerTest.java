@@ -1,5 +1,6 @@
 package kz.shakhuali.springproject.testassignment.controller;
 
+import kz.shakhuali.springproject.testassignment.model.MonthlyLimit;
 import kz.shakhuali.springproject.testassignment.service.MonthlyLimitService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.math.BigDecimal;
-import java.time.YearMonth;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @WebMvcTest(controllers = MonthlyLimitController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -31,28 +34,24 @@ class MonthlyLimitControllerTest {
 
     private String category;
     private BigDecimal amountLimit;
-    private int year;
-    private int month;
+    private ZonedDateTime timestamp;
 
     @BeforeEach
     void setUp() {
         category = "Groceries";
         amountLimit = new BigDecimal("500.00");
-        year = 2023;
-        month = 9;
+        timestamp = ZonedDateTime.now();
     }
 
     @Test
     void itShouldSetMonthlyLimitSuccessfully() throws Exception {
         // When
-        monthlyLimitService.setMonthlyLimit(category, amountLimit, YearMonth.of(year, month));
+        monthlyLimitService.setMonthlyLimit(category, amountLimit);
 
         // Then
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/limit")
                         .param("category", category)
                         .param("amount_limit", amountLimit.toString())
-                        .param("year", String.valueOf(year))
-                        .param("month", String.valueOf(month))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().string("Monthly limit set successfully"));
@@ -66,14 +65,12 @@ class MonthlyLimitControllerTest {
         // When
         Mockito.doThrow(new RuntimeException(message))
                 .when(monthlyLimitService)
-                .setMonthlyLimit(category, amountLimit, YearMonth.of(year, month));
+                .setMonthlyLimit(category, amountLimit);
 
         // Then
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/limit")
                         .param("category", category)
                         .param("amount_limit", amountLimit.toString())
-                        .param("year", String.valueOf(year))
-                        .param("month", String.valueOf(month))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content().string(message));
@@ -82,14 +79,13 @@ class MonthlyLimitControllerTest {
     @Test
     void itShouldGetCurrentMonthlyLimitSuccessfully() throws Exception {
         // When
-        Mockito.when(monthlyLimitService.getCurrentLimit(category, YearMonth.of(year, month)))
+        Mockito.when(monthlyLimitService.getCurrentLimit(category, timestamp))
                 .thenReturn(amountLimit);
 
         // Then
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/limit")
                         .param("category", category)
-                        .param("year", String.valueOf(year))
-                        .param("month", String.valueOf(month))
+                        .param("timestamp", String.valueOf(timestamp))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().string("500.00"));
@@ -99,14 +95,45 @@ class MonthlyLimitControllerTest {
     void itShouldHandleGetCurrentMonthlyLimitFailure() throws Exception {
         // When
         Mockito.doThrow(new RuntimeException("Some error occurred"))
-                .when(monthlyLimitService).getCurrentLimit(category, YearMonth.of(year, month));
+                .when(monthlyLimitService).getCurrentLimit(category, timestamp);
 
         // Then
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/limit")
                         .param("category", category)
-                        .param("year", String.valueOf(year))
-                        .param("month", String.valueOf(month))
+                        .param("timestamp", String.valueOf(timestamp))
                         .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.content().string(""));
+    }
+
+    @Test
+    void itShouldGetAllTransactions() throws Exception {
+        // Given
+        List<MonthlyLimit> monthlyLimits = new ArrayList<>();
+        monthlyLimits.add(new MonthlyLimit(1L, category, amountLimit, ZonedDateTime.now()));
+        monthlyLimits.add(new MonthlyLimit(2L, "Entertainment",
+                new BigDecimal("600.00"), ZonedDateTime.now()));
+        monthlyLimits.add(new MonthlyLimit(3L, "Travel",
+                new BigDecimal("700.00"), ZonedDateTime.now()));
+
+        // When
+        Mockito.when(monthlyLimitService.getAllLimits()).thenReturn(monthlyLimits);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/limit/all"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(monthlyLimits.size()));
+    }
+
+    @Test
+    void itShouldGetAllTransactionsFailure() throws Exception {
+        // When
+        Mockito.doThrow(new RuntimeException("Some error occurred"))
+                .when(monthlyLimitService).getAllLimits();
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/limit/all"))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content().string(""));
     }

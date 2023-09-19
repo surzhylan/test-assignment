@@ -13,7 +13,10 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.YearMonth;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,26 +71,30 @@ public class TransactionServiceImpl implements TransactionService {
 
     private void checkAndSetLimitExceeded(Transaction transaction) {
         String category = transaction.getMonthlyLimit().getCategory();
+        ZonedDateTime transactionTimestamp = transaction.getMonthlyLimit().getTimestamp();
 
-        YearMonth currentMonth = YearMonth.now();
+        BigDecimal currentLimit = monthlyLimitService.getCurrentLimit(category, transactionTimestamp);
 
-        BigDecimal currentLimit = monthlyLimitService.getCurrentLimit(category, currentMonth);
-
-        LocalDateTime startOfMonth = currentMonth.atDay(1).atStartOfDay();
-        LocalDateTime endOfMonth = currentMonth.atEndOfMonth().atTime(23, 59, 59);
+        ZonedDateTime startOfMonth = transactionTimestamp.withDayOfMonth(1).truncatedTo(ChronoUnit.SECONDS);
+        ZonedDateTime endOfMonth = transactionTimestamp.with(TemporalAdjusters.lastDayOfMonth())
+                .with(LocalTime.MAX).truncatedTo(ChronoUnit.SECONDS);
 
         BigDecimal totalAmountForMonth = transactionRepository.calculateTotalAmountForMonth(
                 category,
-                startOfMonth,
-                endOfMonth
+                startOfMonth.toLocalDateTime(),
+                endOfMonth.toLocalDateTime()
         );
 
-        totalAmountForMonth = totalAmountForMonth.add(transaction.getAmount());
-
-        if (totalAmountForMonth.compareTo(currentLimit) > 0) {
-            transaction.setLimitExceeded(true);
+        if (totalAmountForMonth == null) {
+            totalAmountForMonth = BigDecimal.ZERO;
         } else {
-            transaction.setLimitExceeded(false);
+            totalAmountForMonth = totalAmountForMonth.add(transaction.getAmount());
+
+            if (totalAmountForMonth.compareTo(currentLimit) > 0) {
+                transaction.setLimitExceeded(true);
+            } else {
+                transaction.setLimitExceeded(false);
+            }
         }
     }
 }
