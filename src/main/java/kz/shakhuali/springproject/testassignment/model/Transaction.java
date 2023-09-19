@@ -32,11 +32,11 @@ public class Transaction {
     private Long id;
 
     @Column(name = "account_from")
-    @Schema(description = "Номер счета отправителя")
+    @Schema(description = "Банковский счет клиента")
     private Long accountFrom;
 
     @Column(name = "account_to")
-    @Schema(description = "Номер счета получателя")
+    @Schema(description = "Банковский счет контрагента")
     private Long accountTo;
 
     @Schema(description = "Валюта транзакции")
